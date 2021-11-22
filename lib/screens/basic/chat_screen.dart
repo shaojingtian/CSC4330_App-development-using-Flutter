@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flash_chat/constants.dart';
+import 'package:caravan/constants.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-final _firestore = Firestore.instance;
-FirebaseUser loggedInUser;
+final _firestore = FirebaseFirestore.instance;
+User loggedInUser;
 
 class ChatScreen extends StatefulWidget {
   static const String id = 'chat_screen';
@@ -27,7 +27,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
   void getCurrentUser() async {
     try {
-      final user = await _auth.currentUser();
+      final user = await _auth.currentUser;
       if (user != null) {
         loggedInUser = user;
       }
@@ -49,8 +49,8 @@ class _ChatScreenState extends State<ChatScreen> {
                 Navigator.pop(context);
               }),
         ],
-        title: Text('⚡️Chat'),
-        backgroundColor: Colors.lightBlueAccent,
+        title: Text('Chat'),
+        backgroundColor: Color(0xFF7C4DFF),
       ),
       body: SafeArea(
         child: Column(
@@ -72,7 +72,7 @@ class _ChatScreenState extends State<ChatScreen> {
                       decoration: kMessageTextFieldDecoration,
                     ),
                   ),
-                  FlatButton(
+                  TextButton(
                     onPressed: () {
                       messageTextController.clear();
                       _firestore.collection('messages').add({
@@ -82,7 +82,10 @@ class _ChatScreenState extends State<ChatScreen> {
                     },
                     child: Text(
                       'Send',
-                      style: kSendButtonTextStyle,
+                      style: TextStyle(
+                          color: Colors.green,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold),
                     ),
                   ),
                 ],
@@ -104,15 +107,15 @@ class MessagesStream extends StatelessWidget {
         if (!snapshot.hasData) {
           return Center(
             child: CircularProgressIndicator(
-              backgroundColor: Colors.lightBlueAccent,
+              backgroundColor: Color(0xFF7C4DFF),
             ),
           );
         }
-        final messages = snapshot.data.documents.reversed;
+        final messages = snapshot.data.docs.reversed;
         List<MessageBubble> messageBubbles = [];
         for (var message in messages) {
-          final messageText = message.data['text'];
-          final messageSender = message.data['sender'];
+          final messageText = message['text'];
+          final messageSender = message['sender'];
 
           final currentUser = loggedInUser.email;
 
@@ -170,7 +173,7 @@ class MessageBubble extends StatelessWidget {
                     topRight: Radius.circular(30.0),
                   ),
             elevation: 5.0,
-            color: isMe ? Colors.lightBlueAccent : Colors.white,
+            color: isMe ? Colors.green : Colors.white,
             child: Padding(
               padding: EdgeInsets.symmetric(vertical: 10.0, horizontal: 20.0),
               child: Text(
